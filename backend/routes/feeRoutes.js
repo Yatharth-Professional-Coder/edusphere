@@ -1,3 +1,4 @@
+const express = require('express');
 const router = express.Router();
 const { createFee, getFees, updateFeeStatus } = require('../controllers/feeController');
 const { protect, authorize } = require('../middleware/authMiddleware');
