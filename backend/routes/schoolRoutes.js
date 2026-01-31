@@ -1,3 +1,4 @@
+const express = require('express');
 const router = express.Router();
 const { createSchool, getSchools } = require('../controllers/schoolController');
 const { protect, authorize } = require('../middleware/authMiddleware');
