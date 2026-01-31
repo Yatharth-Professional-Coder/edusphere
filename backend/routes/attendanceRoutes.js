@@ -2,8 +2,10 @@ const express = require('express');
 const router = express.Router();
 const { protect, authorize } = require('../middleware/authMiddleware');
 
-router.get('/', protect, authorize('teacher', 'admin', 'parent'), (req, res) => {
-    res.json({ message: 'Get attendance records' });
-});
+const { markAttendance, getAttendance, getStudentAttendance } = require('../controllers/attendanceController');
+
+router.post('/', protect, authorize('teacher', 'admin'), markAttendance);
+router.get('/', protect, authorize('teacher', 'admin', 'parent'), getAttendance);
+router.get('/student/:studentId', protect, authorize('student', 'parent', 'admin'), getStudentAttendance);
 
 module.exports = router;

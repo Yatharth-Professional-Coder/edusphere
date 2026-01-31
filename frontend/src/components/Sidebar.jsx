@@ -17,7 +17,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
         { name: 'Schools', path: '/schools', icon: School, roles: ['superadmin'] },
         { name: 'Teachers', path: '/teachers', icon: Users, roles: ['admin'] },
         { name: 'Students', path: '/students', icon: GraduationCap, roles: ['admin', 'teacher'] },
-        { name: 'Attendance', path: '/attendance', icon: ClipboardList, roles: ['admin', 'teacher', 'parent'] },
+        { name: 'Attendance', path: '/attendance', icon: ClipboardList, roles: ['admin', 'teacher', 'parent', 'student'] },
         { name: 'Fees', path: '/fees', icon: Banknote, roles: ['admin', 'parent'] },
     ];
 

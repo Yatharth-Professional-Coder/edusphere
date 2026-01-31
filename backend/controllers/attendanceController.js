@@ -5,37 +5,53 @@ const Student = require('../models/Student');
 // @route   POST /api/attendance
 // @access  Teacher, Admin
 const markAttendance = async (req, res) => {
-    const { date, className, section, records } = req.body;
+    const { date, className, section, records } = req.body; // Frontend sends className, we map to 'class'
     const schoolId = req.user.schoolId;
 
     try {
         // Check if attendance already exists for this day/class/section
+        // We need to match the date range for the entire day
+        const startDate = new Date(date);
+        startDate.setHours(0, 0, 0, 0);
+        const endDate = new Date(date);
+        endDate.setHours(23, 59, 59, 999);
+
         const existingAttendance = await Attendance.findOne({
-            schoolId,
-            date: new Date(date),
-            className,
+            school: schoolId,
+            date: {
+                $gte: startDate,
+                $lt: endDate
+            },
+            class: className,
             section,
         });
 
         if (existingAttendance) {
             // Update existing record
-            existingAttendance.records = records;
+            existingAttendance.records = records.map(r => ({
+                student: r.studentId,
+                status: r.status
+            }));
             const updatedAttendance = await existingAttendance.save();
             return res.json(updatedAttendance);
         }
 
         // Create new attendance
         const attendance = new Attendance({
-            schoolId,
-            date: new Date(date),
-            className,
+            school: schoolId,
+            date: startDate,
+            class: className,
             section,
-            records,
+            records: records.map(r => ({
+                student: r.studentId,
+                status: r.status
+            })),
         });
 
         const createdAttendance = await attendance.save();
         res.status(201).json(createdAttendance);
     } catch (error) {
+        console.error("Mark Attendance Error:", error);
         res.status(400).json({ message: error.message });
     }
 };
@@ -48,34 +64,48 @@ const getAttendance = async (req, res) => {
     const schoolId = req.user.schoolId;
 
     try {
-        const query = { schoolId };
-        if (date) query.date = new Date(date);
-        if (className) query.className = className;
-        if (section) query.section = section;
+        const query = { school: schoolId };
 
-        const attendance = await Attendance.findOne(query).populate('records.studentId', 'user');
-
-        if (!attendance) {
-            // Return 404 but with info so frontend can handle "not marked yet"
-            return res.status(404).json({ message: 'Attendance not marked for this date' });
+        if (date) {
+            const startDate = new Date(date);
+            startDate.setHours(0, 0, 0, 0);
+            const endDate = new Date(date);
+            endDate.setHours(23, 59, 59, 999);
+            query.date = { $gte: startDate, $lt: endDate };
         }
 
-        // We need to populate the user details inside the student reference
-        // The previous populate might not go deep enough depending on structure
-        // records.studentId is a Student document. Student has 'user' field ref User.
-        // .populate({ path: 'records.studentId', populate: { path: 'user', select: 'name email' } })
+        if (className) query.class = className;
+        if (section) query.section = section;
 
-        const populatedAttendance = await Attendance.findOne(query)
+        const attendance = await Attendance.findOne(query)
             .populate({
-                path: 'records.studentId',
+                path: 'records.student',
+                select: 'name rollNumber user', // Select fields from Student model
                 populate: {
-                    path: 'user',
-                    select: 'name rollNumber'
+                    path: 'user', // Populate User details from Student model
+                    select: 'name email'
                 }
             });
 
-        res.json(populatedAttendance);
+        if (!attendance) {
+            return res.status(404).json({ message: 'Attendance not marked for this date' });
+        }
+
+        // Transform for frontend
+        const formattedRecords = attendance.records.map(r => ({
+            studentId: r.student._id,
+            name: r.student.user ? r.student.user.name : 'Unknown',
+            rollNumber: r.student.rollNumber,
+            status: r.status,
+            _id: r._id
+        }));
+
+        res.json({
+            ...attendance.toObject(),
+            records: formattedRecords
+        });
     } catch (error) {
+        console.error("Get Attendance Error:", error);
         res.status(500).json({ message: error.message });
     }
 };
@@ -84,23 +114,22 @@ const getAttendance = async (req, res) => {
 // @route   GET /api/attendance/student/:studentId
 // @access  Student, Parent, Admin
 const getStudentAttendance = async (req, res) => {
-    // If student, can only view own. If parent, their child. If admin, any.
-    // For simplicity, we trust the ID passed if authorized role.
     const schoolId = req.user.schoolId;
     const { studentId } = req.params;
 
     try {
         const attendanceRecords = await Attendance.find({
-            schoolId,
-            'records.studentId': studentId
-        }).select('date records');
+            school: schoolId,
+            'records.student': studentId
+        }).sort({ date: -1 });
 
         // Filter out just the record for this student
         const studentRecords = attendanceRecords.map(doc => {
-            const record = doc.records.find(r => r.studentId.toString() === studentId);
+            const record = doc.records.find(r => r.student.toString() === studentId);
             return {
                 date: doc.date,
-                status: record ? record.status : 'Unknown', // Should always be found if querying correctly
+                status: record ? record.status : 'Unknown',
+                className: doc.class,
                 _id: doc._id
             };
         });

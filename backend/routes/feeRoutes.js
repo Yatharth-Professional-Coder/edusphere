@@ -7,5 +7,6 @@ router.route('/')
     .post(protect, authorize('admin'), createFee);
 
 router.put('/:id/pay', protect, authorize('admin'), updateFeeStatus);
+router.post('/:id/pay-online', protect, authorize('student', 'parent'), require('../controllers/feeController').payFee);
 
 module.exports = router;

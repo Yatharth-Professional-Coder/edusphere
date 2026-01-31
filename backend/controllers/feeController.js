@@ -83,8 +83,38 @@ const updateFeeStatus = async (req, res) => {
     }
 };
 
+// @desc    Simulate payment (Student/Parent)
+// @route   POST /api/fees/:id/pay-online
+// @access  Private (Student, Parent)
+const payFee = async (req, res) => {
+    try {
+        const fee = await Fee.findById(req.params.id);
+
+        if (!fee) {
+            return res.status(404).json({ message: 'Fee not found' });
+        }
+
+        if (fee.status === 'Paid') {
+            return res.status(400).json({ message: 'Fee already paid' });
+        }
+
+        // Mock Payment Gateway Logic
+        // In a real app, we would verify the payment intent from Stripe/Razorpay here
+
+        fee.status = 'Paid';
+        fee.paymentDate = Date.now();
+        await fee.save();
+
+        res.json({ message: 'Payment successful', fee });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Payment failed' });
+    }
+};
+
 module.exports = {
     createFee,
     getFees,
-    updateFeeStatus
+    updateFeeStatus,
+    payFee
 };

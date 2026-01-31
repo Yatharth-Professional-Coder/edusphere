@@ -7,6 +7,7 @@ import Students from './pages/Students';
 import Fees from './pages/Fees';
 import Layout from './components/Layout';
 import LandingPage from './pages/LandingPage';
+import Attendance from './pages/Attendance';
 import { useAuth } from './context/AuthContext';
 
 // Protected Route Wrapper
@@ -36,6 +37,7 @@ function App() {
         <Route path="teachers" element={<Teachers />} />
         <Route path="students" element={<Students />} />
         <Route path="fees" element={<Fees />} />
+        <Route path="attendance" element={<Attendance />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>
