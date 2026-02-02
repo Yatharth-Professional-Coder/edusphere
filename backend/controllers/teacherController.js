@@ -5,29 +5,35 @@ const Teacher = require('../models/Teacher');
 // @route   POST /api/teachers
 // @access  Private (Admin only)
 const createTeacher = async (req, res) => {
-    const { name, email, password, subjects, classes, qualification } = req.body;
+    const { name, email, password, subjects, classes, qualification, schoolId } = req.body;
 
     try {
+        const schoolToUse = schoolId || req.user.schoolId;
+
+        if (!schoolToUse) {
+            return res.status(400).json({ message: 'School ID is required' });
+        }
+
         // 1. Check if user exists
         const userExists = await User.findOne({ email });
         if (userExists) {
             return res.status(400).json({ message: 'User already exists' });
         }
 
-        // 2. Create User linked to the admin's school
+        // 2. Create User linked to the school
         const user = await User.create({
             name,
             email,
             password,
             role: 'teacher',
-            schoolId: req.user.schoolId, // Inherit from the Admin creating them
+            schoolId: schoolToUse, // Inherit from request or admin
         });
 
         // 3. Create Teacher Profile
         if (user) {
             const teacher = await Teacher.create({
                 user: user._id,
-                school: req.user.schoolId,
+                school: schoolToUse,
                 subjects,
                 classes,
                 qualification,

@@ -5,29 +5,35 @@ const Student = require('../models/Student');
 // @route   POST /api/students
 // @access  Private (Admin only)
 const createStudent = async (req, res) => {
-    const { name, email, password, className, section, rollNumber } = req.body;
+    const { name, email, password, className, section, rollNumber, schoolId } = req.body;
 
     try {
+        const schoolToUse = schoolId || req.user.schoolId;
+
+        if (!schoolToUse) {
+            return res.status(400).json({ message: 'School ID is required' });
+        }
+
         // 1. Check if user exists
         const userExists = await User.findOne({ email });
         if (userExists) {
             return res.status(400).json({ message: 'User already exists' });
         }
 
-        // 2. Create User linked to the admin's school
+        // 2. Create User linked to the school
         const user = await User.create({
             name,
             email,
             password,
             role: 'student',
-            schoolId: req.user.schoolId,
+            schoolId: schoolToUse,
         });
 
         // 3. Create Student Profile
         if (user) {
             const student = await Student.create({
                 user: user._id,
-                school: req.user.schoolId,
+                school: schoolToUse,
                 className,
                 section,
                 rollNumber,
