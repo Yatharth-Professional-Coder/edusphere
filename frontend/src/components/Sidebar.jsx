@@ -17,12 +17,14 @@ const Sidebar = () => {
     const { logout, user } = useAuth();
 
     const navItems = [
-        { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
-        { icon: School, label: 'Schools', path: '/schools' },
-        { icon: Users, label: 'Teachers', path: '/teachers' },
-        { icon: GraduationCap, label: 'Students', path: '/students' },
-        { icon: Banknote, label: 'Fees', path: '/fees' },
-        { icon: CalendarCheck, label: 'Attendance', path: '/attendance' },
+        { icon: LayoutDashboard, label: 'Dashboard', path: '/', roles: ['superadmin', 'admin', 'teacher'] },
+        { icon: School, label: 'Schools', path: '/schools', roles: ['superadmin'] },
+        { icon: Building2, label: 'Classes', path: '/classes', roles: ['admin'] },
+        { icon: Users, label: 'Teachers', path: '/teachers', roles: ['admin'] },
+        { icon: GraduationCap, label: 'Students', path: '/students', roles: ['admin'] },
+        { icon: CalendarCheck, label: 'Attendance', path: '/attendance', roles: ['admin', 'teacher'] },
+        { icon: Banknote, label: 'Fees', path: '/fees', roles: ['admin'] },
+        { icon: CalendarCheck, label: 'Homework', path: '/homework', roles: ['teacher'] },
     ];
 
     const isActive = (path) => {
@@ -30,6 +32,9 @@ const Sidebar = () => {
         if (path !== '/' && location.pathname.startsWith(path)) return true;
         return false;
     };
+
+    // Filter items based on user role
+    const filteredItems = navItems.filter(item => item.roles.includes(user?.role));
 
     return (
         <div className="h-screen w-64 bg-white border-r border-secondary-200 flex flex-col shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-20 transition-all duration-300">
@@ -40,7 +45,9 @@ const Sidebar = () => {
                 </div>
                 <div>
                     <h1 className="font-heading font-bold text-xl text-secondary-900 leading-none">EduSphere</h1>
-                    <span className="text-xs font-medium text-secondary-400 tracking-wide uppercase">Admin Portal</span>
+                    <span className="text-xs font-medium text-secondary-400 tracking-wide uppercase">
+                        {user?.role === 'superadmin' ? 'Super Admin' : user?.role === 'admin' ? 'School Admin' : 'Teacher Portal'}
+                    </span>
                 </div>
             </div>
 
@@ -49,7 +56,7 @@ const Sidebar = () => {
                 <div className="px-3 mb-2 text-xs font-semibold text-secondary-400 uppercase tracking-wider">
                     Menu
                 </div>
-                {navItems.map((item) => {
+                {filteredItems.map((item) => {
                     const active = isActive(item.path);
                     return (
                         <Link
