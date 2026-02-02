@@ -3,7 +3,7 @@ const https = require('https');
 // ==========================================
 // ⚠️ REPLACE THIS WITH YOUR RENDER BACKEND URL ⚠️
 // Example: https://edusphere-backend.onrender.com
-const BACKEND_URL = 'https://YOUR_BACKEND_URL_HERE.onrender.com';
+const BACKEND_URL = 'https://edusphere-ccoq.onrender.com';
 // ==========================================
 
 const userData = JSON.stringify({
