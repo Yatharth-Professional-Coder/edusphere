@@ -44,8 +44,8 @@ const req = https.request(options, (res) => {
         if (res.statusCode === 201 || res.statusCode === 200) {
             console.log("\n✅ SUCCESS! Super Admin Created.");
             console.log("-----------------------------------");
-            console.log(`Email:    superadmin@edusphere.com`);
-            console.log(`Password: SecurePassword123!`);
+            console.log(`Email:    ${JSON.parse(userData).email}`);
+            console.log(`Password: ${JSON.parse(userData).password}`);
             console.log("-----------------------------------");
             console.log("You can now login on your Vercel website.");
         } else {
