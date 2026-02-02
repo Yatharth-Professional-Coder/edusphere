@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Plus, Search, User, Mail, GraduationCap } from 'lucide-react';
+import { Plus, User, Mail, GraduationCap, MapPin } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const Students = () => {
@@ -62,12 +62,15 @@ const Students = () => {
     };
 
     return (
-        <div>
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold text-gray-900">Students</h1>
+        <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 animate-fade-in">
+                <div>
+                    <h1 className="text-2xl font-bold text-secondary-900 tracking-tight">Students</h1>
+                    <p className="text-secondary-500 text-sm mt-1">Manage student records, performace, and enrollment.</p>
+                </div>
                 <button
                     onClick={() => setIsModalOpen(true)}
-                    className="btn-primary flex items-center"
+                    className="btn-primary flex items-center shadow-lg shadow-primary-500/20"
                 >
                     <Plus size={20} className="mr-2" />
                     Add Student
@@ -75,32 +78,38 @@ const Students = () => {
             </div>
 
             {loading ? (
-                <div>Loading...</div>
+                <div className="flex items-center justify-center py-20">
+                    <div className="w-10 h-10 border-4 border-primary-500 border-t-white rounded-full animate-spin"></div>
+                </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {students.map((student) => (
-                        <div key={student._id} className="card hover:shadow-lg transition-shadow">
-                            <div className="flex items-center gap-4 mb-4">
-                                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-600 font-bold text-xl">
+                    {students.map((student, index) => (
+                        <div
+                            key={student._id}
+                            className="card card-hover group animate-scale-in"
+                            style={{ animationDelay: `${index * 50}ms` }}
+                        >
+                            <div className="flex items-center gap-4 mb-5">
+                                <div className="w-14 h-14 bg-gradient-to-br from-success-50 to-success-100 rounded-2xl flex items-center justify-center text-success-600 font-bold text-xl shadow-inner border border-success-200">
                                     {student.user.name.charAt(0)}
                                 </div>
-                                <div>
-                                    <h3 className="text-lg font-bold text-gray-900">{student.user.name}</h3>
-                                    <p className="text-gray-500 text-sm flex items-center">
-                                        <Mail size={14} className="mr-1" />
+                                <div className="min-w-0">
+                                    <h3 className="text-lg font-bold text-secondary-900 truncate">{student.user.name}</h3>
+                                    <p className="text-secondary-500 text-sm flex items-center truncate">
+                                        <Mail size={14} className="mr-1.5" />
                                         {student.user.email}
                                     </p>
                                 </div>
                             </div>
 
-                            <div className="pt-4 border-t border-gray-100 grid grid-cols-2 gap-4 text-center">
-                                <div>
-                                    <p className="text-xs text-gray-500 uppercase tracking-wide">Class</p>
-                                    <p className="font-semibold text-gray-900">{student.className} - {student.section}</p>
+                            <div className="grid grid-cols-2 gap-3 text-center mb-2">
+                                <div className="bg-secondary-50 rounded-xl p-2 border border-secondary-100">
+                                    <p className="text-[10px] text-secondary-400 uppercase tracking-wider font-bold">Class</p>
+                                    <p className="font-bold text-secondary-900 text-lg">{student.className}-{student.section}</p>
                                 </div>
-                                <div>
-                                    <p className="text-xs text-gray-500 uppercase tracking-wide">Roll No</p>
-                                    <p className="font-semibold text-gray-900">{student.rollNumber}</p>
+                                <div className="bg-secondary-50 rounded-xl p-2 border border-secondary-100">
+                                    <p className="text-[10px] text-secondary-400 uppercase tracking-wider font-bold">Roll No</p>
+                                    <p className="font-bold text-secondary-900 text-lg">#{student.rollNumber}</p>
                                 </div>
                             </div>
                         </div>
@@ -109,80 +118,93 @@ const Students = () => {
             )}
 
             {isModalOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 animate-fade-in max-h-[90vh] overflow-y-auto">
-                        <h2 className="text-xl font-bold text-gray-900 mb-4">Add New Student</h2>
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                                <input
-                                    type="text"
-                                    name="name"
-                                    value={formData.name}
-                                    onChange={handleInputChange}
-                                    className="input-field"
-                                    required
-                                />
+                <div className="fixed inset-0 bg-secondary-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-8 animate-scale-in border border-secondary-100 overflow-y-auto max-h-[90vh]">
+                        <div className="text-center mb-8">
+                            <div className="w-12 h-12 bg-success-100 rounded-full flex items-center justify-center mx-auto mb-4 text-success-600">
+                                <GraduationCap size={24} />
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                                <input
-                                    type="email"
-                                    name="email"
-                                    value={formData.email}
-                                    onChange={handleInputChange}
-                                    className="input-field"
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                                <input
-                                    type="password"
-                                    name="password"
-                                    value={formData.password}
-                                    onChange={handleInputChange}
-                                    className="input-field"
-                                    required
-                                />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
+                            <h2 className="text-2xl font-bold text-secondary-900">Add New Student</h2>
+                            <p className="text-secondary-500 text-sm mt-1">Enroll a new student into the class.</p>
+                        </div>
+
+                        <form onSubmit={handleSubmit} className="space-y-5">
+                            <div className="grid grid-cols-2 gap-5">
+                                <div className="col-span-2">
+                                    <label className="block text-sm font-semibold text-secondary-700 mb-1.5">Full Name</label>
+                                    <input
+                                        type="text"
+                                        name="name"
+                                        value={formData.name}
+                                        onChange={handleInputChange}
+                                        className="input-field"
+                                        placeholder="e.g. Alex Smith"
+                                        required
+                                    />
+                                </div>
+                                <div className="col-span-2">
+                                    <label className="block text-sm font-semibold text-secondary-700 mb-1.5">Email Address</label>
+                                    <input
+                                        type="email"
+                                        name="email"
+                                        value={formData.email}
+                                        onChange={handleInputChange}
+                                        className="input-field"
+                                        placeholder="student@school.com"
+                                        required
+                                    />
+                                </div>
+                                <div className="col-span-2">
+                                    <label className="block text-sm font-semibold text-secondary-700 mb-1.5">Password</label>
+                                    <input
+                                        type="password"
+                                        name="password"
+                                        value={formData.password}
+                                        onChange={handleInputChange}
+                                        className="input-field"
+                                        placeholder="••••••••"
+                                        required
+                                    />
+                                </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Class</label>
+                                    <label className="block text-sm font-semibold text-secondary-700 mb-1.5">Class</label>
                                     <input
                                         type="text"
                                         name="className"
                                         value={formData.className}
                                         onChange={handleInputChange}
                                         className="input-field"
+                                        placeholder="10"
                                         required
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Section</label>
+                                    <label className="block text-sm font-semibold text-secondary-700 mb-1.5">Section</label>
                                     <input
                                         type="text"
                                         name="section"
                                         value={formData.section}
                                         onChange={handleInputChange}
                                         className="input-field"
+                                        placeholder="A"
+                                        required
+                                    />
+                                </div>
+                                <div className="col-span-2">
+                                    <label className="block text-sm font-semibold text-secondary-700 mb-1.5">Roll Number</label>
+                                    <input
+                                        type="text"
+                                        name="rollNumber"
+                                        value={formData.rollNumber}
+                                        onChange={handleInputChange}
+                                        className="input-field"
+                                        placeholder="101"
                                         required
                                     />
                                 </div>
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Roll Number</label>
-                                <input
-                                    type="text"
-                                    name="rollNumber"
-                                    value={formData.rollNumber}
-                                    onChange={handleInputChange}
-                                    className="input-field"
-                                    required
-                                />
-                            </div>
 
-                            <div className="flex gap-3 mt-6">
+                            <div className="flex gap-4 mt-8 pt-2">
                                 <button
                                     type="button"
                                     onClick={() => setIsModalOpen(false)}
@@ -192,7 +214,7 @@ const Students = () => {
                                 </button>
                                 <button
                                     type="submit"
-                                    className="btn-primary flex-1"
+                                    className="btn-primary flex-1 shadow-lg shadow-primary-500/25"
                                 >
                                     Add Student
                                 </button>
